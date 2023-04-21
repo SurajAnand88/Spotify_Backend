@@ -147,7 +147,7 @@ const addLikedSongRouter = async (req, res) => {
       );
     }
 
-    const user = await User.findOne({ email: [email] }).select(
+    const user = await User.findOne({ _id: id }).select(
       "_id name email authType avatarUrl isPremium likedSongs playList"
     );
 
@@ -171,7 +171,7 @@ const removeLikedSongRouter = async (req, res) => {
       }
     );
 
-    const user = await User.findOne({ email: [email] }).select(
+    const user = await User.findOne({ _id: id }).select(
       "_id name email authType avatarUrl isPremium likedSongs playList"
     );
 
