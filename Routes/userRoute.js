@@ -241,22 +241,46 @@ const likedSongsRouter = async (req, res) => {
   try {
     const { id } = req.params;
     var likedSongs;
-    var user = await User.findOne({ _id: id }).select(
-      "_id name email authType avatarUrl isPremium likedSongs playList"
-    );
 
-    if (!user) {
-      user = await GoogleUser.findOne({ _id: id }).select(
-        "_id name email authType avatarUrl isPremium likedSongs playList"
-      );
-      var { likedSongs } = await GoogleUser.findOne({ _id: id }).select(
-        "likedSongs"
-      );
+    const { authorization } = req.headers;
+    if (authorization) {
+      const token = authorization.split(" ")[1];
+      if (token) {
+        let user = await jwt.verify(token, process.env.JSONTOKEN_PRIVATE_KEY);
+
+        if (user.authType === "google") {
+          var { likedSongs } = await GoogleUser.findOne({ _id: id }).select(
+            "likedSongs"
+          );
+        } else {
+          var { likedSongs } = await User.findOne({ _id: id }).select(
+            "likedSongs"
+          );
+        }
+        res.send(likedSongs).status(200);
+      } else {
+        res.send("Invalid Token ").status(300);
+      }
     } else {
-      var { likedSongs } = await User.findOne({ _id: id }).select("likedSongs");
+      res.send("Invalid authorization Headers");
     }
 
-    res.send(likedSongs).status(200);
+    // var user = await User.findOne({ _id: id }).select(
+    //   "_id name email authType avatarUrl isPremium likedSongs playList"
+    // );
+
+    // if (!user) {
+    //   user = await GoogleUser.findOne({ _id: id }).select(
+    //     "_id name email authType avatarUrl isPremium likedSongs playList"
+    //   );
+    //   var { likedSongs } = await GoogleUser.findOne({ _id: id }).select(
+    //     "likedSongs"
+    //   );
+    // } else {
+    //   var { likedSongs } = await User.findOne({ _id: id }).select("likedSongs");
+    // }
+
+    // res.send(likedSongs).status(200);
   } catch (error) {
     res.status(500).send(error.message);
   }
