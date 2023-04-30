@@ -247,7 +247,7 @@ const likedSongsRouter = async (req, res) => {
       const token = authorization.split(" ")[1];
       if (token) {
         let user = await jwt.verify(token, process.env.JSONTOKEN_PRIVATE_KEY);
-
+        console.log(user);
         if (user.authType === "google") {
           var { likedSongs } = await GoogleUser.findOne({ _id: id }).select(
             "likedSongs"
@@ -257,6 +257,7 @@ const likedSongsRouter = async (req, res) => {
             "likedSongs"
           );
         }
+        console.log(likedSongs);
         res.send(likedSongs).status(200);
       } else {
         res.send("Invalid Token ").status(300);
