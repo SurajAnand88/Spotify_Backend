@@ -186,6 +186,7 @@ const addLikedSongRouter = async (req, res) => {
   }
 };
 
+//Remove Liked Songs
 const removeLikedSongRouter = async (req, res) => {
   try {
     const { id } = req.params;
@@ -247,7 +248,6 @@ const likedSongsRouter = async (req, res) => {
       const token = authorization.split(" ")[1];
       if (token) {
         let user = await jwt.verify(token, process.env.JSONTOKEN_PRIVATE_KEY);
-        console.log(user);
         if (user.authType === "google") {
           var { likedSongs } = await GoogleUser.findOne({
             _id: user._id,
@@ -257,7 +257,6 @@ const likedSongsRouter = async (req, res) => {
             "likedSongs"
           );
         }
-        console.log(likedSongs);
         res.send(likedSongs).status(200);
       } else {
         res.send("Invalid Token ").status(300);
