@@ -136,12 +136,12 @@ const addLikedSongRouter = async (req, res) => {
     const { id } = req.params;
     const data = req.body;
     var song = null;
-    var user = await User.findOne({ _id: id }).select(
+    var users = await User.findOne({ _id: id }).select(
       "_id name email authType avatarUrl isPremium likedSongs playList"
     );
 
-    if (!user) {
-      user = await GoogleUser.findOne({ _id: id }).select(
+    if (!users) {
+      users = await GoogleUser.findOne({ _id: id }).select(
         "_id name email authType avatarUrl isPremium likedSongs playList"
       );
       song = await GoogleUser.findOne({ "likedSongs.songName": data.songName });
@@ -150,7 +150,7 @@ const addLikedSongRouter = async (req, res) => {
     }
 
     if (song === null) {
-      if (user.authType === "google") {
+      if (users.authType === "google") {
         await GoogleUser.updateOne(
           { _id: id },
           {
@@ -170,7 +170,16 @@ const addLikedSongRouter = async (req, res) => {
         );
       }
     }
-
+    var user;
+    if (users.authType === "google") {
+      user = await GoogleUser.findOne({ _id: id }).select(
+        "_id name email authType avatarUrl isPremium likedSongs playList"
+      );
+    } else {
+      user = await User.findOne({ _id: id }).select(
+        "_id name email authType avatarUrl isPremium likedSongs playList"
+      );
+    }
     res.send({ user }).status(200);
   } catch (error) {
     res.status(500).send(error.message);
@@ -182,18 +191,44 @@ const removeLikedSongRouter = async (req, res) => {
     const { id } = req.params;
     const data = req.body;
 
-    await User.updateOne(
-      { _id: id },
-      {
-        $pull: {
-          likedSongs: { songName: data.songName },
-        },
-      }
-    );
-
-    const user = await User.findOne({ _id: id }).select(
+    var users = await User.findOne({ _id: id }).select(
       "_id name email authType avatarUrl isPremium likedSongs playList"
     );
+
+    if (!users) {
+      users = await GoogleUser.findOne({ _id: id }).select(
+        "_id name email authType avatarUrl isPremium likedSongs playList"
+      );
+    }
+    if (user.authType === "google") {
+      await GoogleUser.updateOne(
+        { _id: id },
+        {
+          $pull: {
+            likedSongs: { songName: data.songName },
+          },
+        }
+      );
+    } else {
+      await User.updateOne(
+        { _id: id },
+        {
+          $pull: {
+            likedSongs: { songName: data.songName },
+          },
+        }
+      );
+    }
+
+    var user = await User.findOne({ _id: id }).select(
+      "_id name email authType avatarUrl isPremium likedSongs playList"
+    );
+
+    if (!user) {
+      user = await GoogleUser.findOne({ _id: id }).select(
+        "_id name email authType avatarUrl isPremium likedSongs playList"
+      );
+    }
 
     res.send({ user }).status(200);
   } catch (error) {
@@ -205,8 +240,22 @@ const likedSongsRouter = async (req, res) => {
   console.log("LIKes");
   try {
     const { id } = req.params;
+    var likedSongs;
+    var user = await User.findOne({ _id: id }).select(
+      "_id name email authType avatarUrl isPremium likedSongs playList"
+    );
 
-    const { likedSongs } = await User.findOne({ _id: id }).select("likedSongs");
+    if (!user) {
+      user = await GoogleUser.findOne({ _id: id }).select(
+        "_id name email authType avatarUrl isPremium likedSongs playList"
+      );
+      var { likedSongs } = await GoogleUser.findOne({ _id: id }).select(
+        "likedSongs"
+      );
+    } else {
+      var { likedSongs } = await User.findOne({ _id: id }).select("likedSongs");
+    }
+
     res.send(likedSongs).status(200);
   } catch (error) {
     res.status(500).send(error.message);
@@ -217,7 +266,7 @@ const premiumUserRouter = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await User.updateOne(
+    var user = await User.updateOne(
       { _id: id },
       {
         $set: {
@@ -225,7 +274,16 @@ const premiumUserRouter = async (req, res) => {
         },
       }
     );
-    console.log(user);
+    if (!user) {
+      user = await GoogleUser.updateOne(
+        { _id: id },
+        {
+          $set: {
+            isPremium: true,
+          },
+        }
+      );
+    }
     res.send({ user }).status(200);
   } catch (error) {
     res.status(500).send(error.message);
