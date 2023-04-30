@@ -249,11 +249,11 @@ const likedSongsRouter = async (req, res) => {
         let user = await jwt.verify(token, process.env.JSONTOKEN_PRIVATE_KEY);
         console.log(user);
         if (user.authType === "google") {
-          var { likedSongs } = await GoogleUser.findOne({ _id: id }).select(
+          likedSongs = await GoogleUser.findOne({ _id: user.id }).select(
             "likedSongs"
           );
         } else {
-          var { likedSongs } = await User.findOne({ _id: id }).select(
+          likedSongs = await User.findOne({ _id: user.id }).select(
             "likedSongs"
           );
         }
