@@ -100,6 +100,8 @@ const loggedInUserRoute = async (req, res) => {
   }
 };
 
+//Google auth route
+
 async function googleAuthRoute(req, res) {
   const data = req.body;
   try {
@@ -117,7 +119,6 @@ async function googleAuthRoute(req, res) {
       });
     }
     const token = await generateAccessToken(user.toJSON());
-    console.log(user, token);
     res
       .send({
         user,
@@ -129,27 +130,46 @@ async function googleAuthRoute(req, res) {
   }
 }
 
+//AddlikedSong
 const addLikedSongRouter = async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
-
-    const song = await User.findOne({ "likedSongs.songName": data.songName });
-
-    if (song === null) {
-      await User.updateOne(
-        { _id: id },
-        {
-          $push: {
-            likedSongs: data,
-          },
-        }
-      );
-    }
-
-    const user = await User.findOne({ _id: id }).select(
+    var song = null;
+    var user = await User.findOne({ _id: id }).select(
       "_id name email authType avatarUrl isPremium likedSongs playList"
     );
+
+    if (!user) {
+      user = await GoogleUser.findOne({ _id: id }).select(
+        "_id name email authType avatarUrl isPremium likedSongs playList"
+      );
+      song = await GoogleUser.findOne({ "likedSongs.songName": data.songName });
+    } else {
+      song = await User.findOne({ "likedSongs.songName": data.songName });
+    }
+
+    if (song === null) {
+      if (user.authType === "google") {
+        await GoogleUser.updateOne(
+          { _id: id },
+          {
+            $push: {
+              likedSongs: data,
+            },
+          }
+        );
+      } else {
+        await User.updateOne(
+          { _id: id },
+          {
+            $push: {
+              likedSongs: data,
+            },
+          }
+        );
+      }
+    }
 
     res.send({ user }).status(200);
   } catch (error) {
