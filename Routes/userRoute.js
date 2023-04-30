@@ -239,7 +239,7 @@ const removeLikedSongRouter = async (req, res) => {
 const likedSongsRouter = async (req, res) => {
   console.log("LIKes");
   try {
-    const { id } = req.params;
+    // const { id } = req.params;
     var likedSongs;
 
     const { authorization } = req.headers;

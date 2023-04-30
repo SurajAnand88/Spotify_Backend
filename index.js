@@ -15,9 +15,7 @@ require("dotenv").config();
 const cookieParser = require("cookie-parser");
 
 const app = express();
-app.use(
-  cors()
-);
+app.use(cors());
 app.use(express.json());
 const port = process.env.PORT || 4000;
 
@@ -27,7 +25,7 @@ app.post("/signup", registerRoute);
 app.post("/login", loginRoute);
 app.get("/loginUser", loggedInUserRoute);
 app.get("/loggedInUser", loggedInUserRoute);
-app.get("/getLikedSongList/:id", likedSongsRouter);
+app.get("/getLikedSongList/", likedSongsRouter);
 app.post("/addSong/:id", addLikedSongRouter);
 app.post("/removeSong/:id", removeLikedSongRouter);
 app.get("/premium/:id", premiumUserRouter);
