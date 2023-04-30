@@ -265,17 +265,19 @@ const likedSongsRouter = async (req, res) => {
 const premiumUserRouter = async (req, res) => {
   try {
     const { id } = req.params;
-
-    var user = await User.updateOne(
-      { _id: id },
-      {
-        $set: {
-          isPremium: true,
-        },
-      }
-    );
-    if (!user) {
+    var users = await User.findOne({ id: id });
+    var user;
+    if (!users) {
       user = await GoogleUser.updateOne(
+        { _id: id },
+        {
+          $set: {
+            isPremium: true,
+          },
+        }
+      );
+    } else {
+      user = await User.updateOne(
         { _id: id },
         {
           $set: {
