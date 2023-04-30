@@ -200,7 +200,7 @@ const removeLikedSongRouter = async (req, res) => {
         "_id name email authType avatarUrl isPremium likedSongs playList"
       );
     }
-    if (user.authType === "google") {
+    if (users.authType === "google") {
       await GoogleUser.updateOne(
         { _id: id },
         {
